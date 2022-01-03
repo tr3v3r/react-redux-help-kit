@@ -97,6 +97,31 @@ export const TodoListComponent = () => {
 
 ```
 
+To change **error** type you can re-assign it locally:
+
+```javascript
+const { error } = useRequestError<ICustomError>( /* action */ ); 
+```
+Or globally:
+
+```javascript
+// create src/@types/react-redux-help-kit/index.d.ts
+
+import 'react-redux-help-kit';
+import {Action} from 'react-redux-help-kit';
+
+declare module 'react-redux-help-kit' {
+  export function useRequestError<T extends ICustomError>(
+    action: Action,
+  ): {
+    error: T | null;
+    clearError: () => void;
+  };
+}
+
+```
+
+
 
 
 
