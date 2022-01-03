@@ -1,0 +1,44 @@
+{
+  "name": "react-redux-help-kit",
+  "version": "1.0.0",
+  "description": "React + Redux utils to improve Development Experience.",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tr3v3r/react-redux-help-kit.git"
+  },
+  "keywords": [
+    "React",
+    "react-redux",
+    "async",
+    "redux",
+    "redux",
+    "helpers"
+  ],
+  "author": "Aliaksei Astafyeu",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/tr3v3r/react-redux-help-kit/issues"
+  },
+  "homepage": "https://github.com/tr3v3r/react-redux-help-kit#readme",
+  "devDependencies": {
+    "@react-native-community/eslint-config": "^3.0.1",
+    "@typescript-eslint/eslint-plugin": "^5.8.1",
+    "@typescript-eslint/parser": "^5.8.1",
+    "eslint": "8.0.0",
+    "prettier": "^2.5.1",
+    "react": "^17.0.2",
+    "react-redux": "^7.2.6",
+    "redux": "^4.1.2",
+    "typescript": "^4.5.4"
+  },
+  "peerDependencies": {
+    "react": "*",
+    "react-redux": "*",
+    "redux": "*"
+  }
+}
