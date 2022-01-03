@@ -1,8 +1,8 @@
 import {useSelector, useDispatch} from 'react-redux';
 import {useEffect, useCallback, useMemo} from 'react';
 
-import {clearSuccessByActionType} from '../redux-kit';
-import {ReduxKitState} from '../types';
+import {ReduxKitState} from '../redux-kit';
+import {clearSuccessByActionType} from '../redux-kit/reducers';
 import {Action} from './types';
 
 export function useOnRequestSuccess(

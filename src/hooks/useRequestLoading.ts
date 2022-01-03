@@ -1,8 +1,8 @@
 import {useSelector, useDispatch} from 'react-redux';
 import {useCallback, useMemo} from 'react';
 
-import {clearLoadingByActionType} from '../redux-kit';
-import {ReduxKitState} from '../types';
+import {ReduxKitState} from '../redux-kit';
+import {clearLoadingByActionType} from '../redux-kit/reducers';
 import {Action} from './types';
 
 export function useRequestLoading(action: Action): {

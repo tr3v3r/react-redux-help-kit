@@ -1,12 +1,13 @@
 import {useSelector, useDispatch} from 'react-redux';
 import {useEffect, useCallback, useMemo} from 'react';
 
-import {clearErrorByActionType} from '../redux-kit';
-import {ReduxKitState} from '../types';
+import {ReduxKitState} from '../redux-kit';
+import {clearErrorByActionType} from '../redux-kit/reducers';
 import {Action} from './types';
+import {IError} from '../types';
 
 export function useRequestError(action: Action): {
-  error: Error | null;
+  error: IError | null;
   clearError: () => void;
 } {
   const key = String(action).replace('_REQUEST', '');
