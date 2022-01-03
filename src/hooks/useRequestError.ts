@@ -6,8 +6,10 @@ import {clearErrorByActionType} from '../redux-kit/reducers';
 import {Action} from './types';
 import {IError} from '../types';
 
-export function useRequestError(action: Action): {
-  error: IError | null;
+export function useRequestError<T extends IError>(
+  action: Action,
+): {
+  error: T | null;
   clearError: () => void;
 } {
   const key = String(action).replace('_REQUEST', '');
@@ -21,7 +23,9 @@ export function useRequestError(action: Action): {
     return clearError;
   }, [clearError]);
 
-  const error = useSelector((state: ReduxKitState) => state.error[key] || null);
+  const error = useSelector(
+    (state: ReduxKitState) => state.error[key] || null,
+  ) as T;
 
   return useMemo(
     () => ({
