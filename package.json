@@ -39,7 +39,6 @@
   "peerDependencies": {
     "react": "*",
     "react-redux": "*",
-    "redux": "*",
-    
+    "redux": "*"    
   }
 }
