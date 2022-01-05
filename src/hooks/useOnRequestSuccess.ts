@@ -16,16 +16,17 @@ export function useOnRequestSuccess(
     dispatch(clearSuccessByActionType(key));
   }, [dispatch, key]);
 
-  const success = useSelector(
-    (state: ReduxKitState) => state.success[key] || null,
-  );
+  const {data = null, success = null} =
+    useSelector((state: ReduxKitState) => {
+      return state.success[key] || null;
+    }) || {};
 
   useEffect(() => {
     if (success === true && typeof onSuccess === 'function') {
-      onSuccess?.();
+      onSuccess?.(data);
       clearSuccessStatus();
     }
-  }, [clearSuccessStatus, onSuccess, success]);
+  }, [clearSuccessStatus, data, onSuccess, success]);
 
   useEffect(() => {
     return clearSuccessStatus;
@@ -35,7 +36,8 @@ export function useOnRequestSuccess(
     () => ({
       success,
       clearSuccessStatus,
+      data,
     }),
-    [clearSuccessStatus, success],
+    [clearSuccessStatus, data, success],
   );
 }

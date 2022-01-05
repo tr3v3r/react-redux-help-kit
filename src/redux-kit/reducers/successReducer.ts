@@ -7,7 +7,12 @@ export const clearSuccessByActionType = (actionType: string) => ({
 });
 
 export interface ISuccessReducerState {
-  [actionType: string]: boolean;
+  [actionType: string]:
+    | {
+        data: null | any;
+        success: boolean | null;
+      }
+    | undefined;
 }
 
 export const successReducer = (
@@ -31,9 +36,13 @@ export const successReducer = (
   const [, requestName, requestState] = matches;
   return {
     ...state,
-    [requestName]:
-      (requestState === 'REQUEST' && null) ||
-      (requestState === 'SUCCESS' && true) ||
-      (requestState === 'FAILURE' && false),
+
+    [requestName]: {
+      data: payload,
+      success:
+        (requestState === 'REQUEST' && null) ||
+        (requestState === 'SUCCESS' && true) ||
+        (requestState === 'FAILURE' && false),
+    },
   };
 };
