@@ -38,7 +38,7 @@ export const successReducer = (
     ...state,
 
     [requestName]: {
-      data: payload,
+      data: requestState === 'SUCCESS' ? payload : null,
       success:
         (requestState === 'REQUEST' && null) ||
         (requestState === 'SUCCESS' && true) ||
