@@ -7,8 +7,9 @@ import {Action} from './types';
 
 export function useOnRequestSuccess(
   action: Action,
-  onSuccess: Function,
-): {success: boolean | null; clearSuccessStatus: () => void} {
+  onSuccess?: Function,
+  autoClear: boolean = true,
+) {
   const key = String(action).replace('_REQUEST', '');
   const dispatch = useDispatch();
 
@@ -24,9 +25,12 @@ export function useOnRequestSuccess(
   useEffect(() => {
     if (success === true && typeof onSuccess === 'function') {
       onSuccess?.(data);
-      clearSuccessStatus();
+
+      if (autoClear) {
+        clearSuccessStatus();
+      }
     }
-  }, [clearSuccessStatus, data, onSuccess, success]);
+  }, [clearSuccessStatus, data, onSuccess, success, autoClear]);
 
   useEffect(() => {
     return clearSuccessStatus;
