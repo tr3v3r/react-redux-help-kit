@@ -5,6 +5,7 @@ import {ReduxKitState} from '../redux-kit';
 import {clearSuccessByActionType} from '../redux-kit/reducers';
 import {Action} from './types';
 import {useUpdateEffect} from './useUpdateEffect';
+import {useStaticCallback} from './useStaticCallback';
 
 export function useOnRequestSuccess(
   action: Action,
@@ -23,15 +24,21 @@ export function useOnRequestSuccess(
       return state.success[key] || null;
     }) || {};
 
+  const staticSuccessCallback = useStaticCallback(() => {
+    if (onSuccess) {
+      onSuccess(data);
+    }
+  }, [onSuccess, data]);
+
   useUpdateEffect(() => {
-    if (success === true && typeof onSuccess === 'function') {
-      onSuccess?.(data);
+    if (success === true) {
+      staticSuccessCallback();
 
       if (autoClear) {
         clearSuccessStatus();
       }
     }
-  }, [clearSuccessStatus, data, onSuccess, success, autoClear]);
+  }, [clearSuccessStatus, staticSuccessCallback, success, autoClear]);
 
   useEffect(() => {
     return clearSuccessStatus;
