@@ -1,5 +1,4 @@
 import {mapValues} from './mapValues';
-import {set} from './set';
 import {ACTION_META_PROPERT_NAME} from '../constants';
 
 export function addReducerIdToMeta<T extends Record<string, Function>>(
@@ -12,18 +11,29 @@ export function addReducerIdToMeta<T extends Record<string, Function>>(
         let action = value(...args);
 
         if (!action.meta) {
-          return set(action, [ACTION_META_PROPERT_NAME], metaData);
+          return {
+            ...action,
+            [ACTION_META_PROPERT_NAME]: metaData,
+          };
         }
 
         if (!action.meta.reducerId) {
-          action = set(action, [ACTION_META_PROPERT_NAME], metaData);
+          action = {
+            ...action,
+            [ACTION_META_PROPERT_NAME]: {
+              ...action[ACTION_META_PROPERT_NAME],
+              ...metaData,
+            },
+          };
         }
 
-        return set(
-          action,
-          [ACTION_META_PROPERT_NAME],
-          addReducerIdToMeta(action.meta, metaData),
-        );
+        return {
+          ...action,
+          [ACTION_META_PROPERT_NAME]: {
+            ...action[ACTION_META_PROPERT_NAME],
+            ...addReducerIdToMeta(action[ACTION_META_PROPERT_NAME], metaData),
+          },
+        };
       };
       return foo;
     }
