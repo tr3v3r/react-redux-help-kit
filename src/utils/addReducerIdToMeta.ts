@@ -9,14 +9,14 @@ export function addReducerIdToMeta<T extends Record<string, Function>>(
   return mapValues(actions, value => {
     if (typeof value === 'function') {
       const foo = (...args) => {
-        const action = value(...args);
+        let action = value(...args);
 
         if (!action.meta) {
           return set(action, [ACTION_META_PROPERT_NAME], metaData);
         }
 
         if (!action.meta.reducerId) {
-          set(action, [ACTION_META_PROPERT_NAME], metaData);
+          action = set(action, [ACTION_META_PROPERT_NAME], metaData);
         }
 
         return set(
