@@ -1,6 +1,6 @@
 import {AnyAction} from 'redux';
 
-import {ACTIONS} from '../constants';
+import {ACTIONS} from '../../constants';
 
 export const clearLoadingByActionType = (actionType: string) => ({
   type: ACTIONS.CLEAR_SUCCESS_BY_ACTION_TYPE,
@@ -15,7 +15,7 @@ export const loadingReducer = (
   state: ILoadingReducerState = {},
   action: AnyAction,
 ): ILoadingReducerState => {
-  const {type, payload} = action;
+  const {type, payload, meta} = action;
 
   if (type === ACTIONS.CLEAR_LOADING_BY_ACTION_TYPE) {
     return {
@@ -31,8 +31,10 @@ export const loadingReducer = (
   }
 
   const [, requestName, requestState] = matches;
+  const key = `${requestName}${meta?.reducerId || ''}`;
+
   return {
     ...state,
-    [requestName]: requestState === 'REQUEST',
+    [key]: requestState === 'REQUEST',
   };
 };

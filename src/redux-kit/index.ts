@@ -1,4 +1,9 @@
-import {loadingReducer, successReducer, errorReducer} from './reducers';
+import {
+  loadingReducer,
+  successReducer,
+  errorReducer,
+  byIdReducer,
+} from './reducers';
 import type {StateType} from './types';
 
 export const asyncReducers = {
@@ -6,5 +11,7 @@ export const asyncReducers = {
   success: successReducer,
   error: errorReducer,
 };
+
+export {byIdReducer};
 
 export type ReduxKitState = StateType<typeof asyncReducers>;

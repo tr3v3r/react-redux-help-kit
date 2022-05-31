@@ -1,5 +1,5 @@
 import {AnyAction} from 'redux';
-import {ACTIONS} from '../constants';
+import {ACTIONS} from '../../constants';
 
 export const clearSuccessByActionType = (actionType: string) => ({
   type: ACTIONS.CLEAR_SUCCESS_BY_ACTION_TYPE,
@@ -19,7 +19,7 @@ export const successReducer = (
   state: ISuccessReducerState = {},
   action: AnyAction,
 ): ISuccessReducerState => {
-  const {type, payload} = action;
+  const {type, payload, meta} = action;
 
   if (type === ACTIONS.CLEAR_SUCCESS_BY_ACTION_TYPE) {
     return {
@@ -34,10 +34,12 @@ export const successReducer = (
   }
 
   const [, requestName, requestState] = matches;
+  const key = `${requestName}${meta?.reducerId || ''}`;
+
   return {
     ...state,
 
-    [requestName]: {
+    [key]: {
       data: requestState === 'SUCCESS' ? payload : null,
       success:
         (requestState === 'REQUEST' && null) ||

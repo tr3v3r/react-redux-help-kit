@@ -12,7 +12,10 @@ export function useOnRequestSuccess(
   onSuccess?: Function,
   autoClear: boolean = true,
 ) {
-  const key = String(action).replace('_REQUEST', '');
+  const {type, meta} = typeof action === 'function' ? action() : action;
+  const actionTypeKey = type.replace('_REQUEST', '');
+  const key = `${actionTypeKey}${meta?.reducerId || ''}`;
+
   const dispatch = useDispatch();
 
   const clearSuccessStatus = useCallback(() => {

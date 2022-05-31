@@ -1,5 +1,5 @@
 import {AnyAction} from 'redux';
-import {ACTIONS} from '../constants';
+import {ACTIONS} from '../../constants';
 import {IError} from '../../types';
 
 export const clearErrorByActionType = (actionType: string) => ({
@@ -15,7 +15,7 @@ export const errorReducer = (
   state: IErrorReducerState = {},
   action: AnyAction,
 ): IErrorReducerState => {
-  const {type, payload} = action;
+  const {type, payload, meta} = action;
 
   if (type === ACTIONS.CLEAR_ERROR_BY_ACTION_TYPE) {
     return {
@@ -30,8 +30,9 @@ export const errorReducer = (
   }
 
   const [, requestName, requestState] = matches;
+  const key = `${requestName}${meta?.reducerId || ''}`;
   return {
     ...state,
-    [requestName]: requestState === 'FAILURE' ? (payload as IError) : null,
+    [key]: requestState === 'FAILURE' ? (payload as IError) : null,
   };
 };

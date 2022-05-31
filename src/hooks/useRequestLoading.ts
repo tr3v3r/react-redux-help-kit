@@ -9,7 +9,10 @@ export function useRequestLoading(action: Action): {
   loading: boolean;
   clearLoadingStatus: () => void;
 } {
-  const key = String(action).replace('_REQUEST', '');
+  const {type, meta} = typeof action === 'function' ? action() : action;
+  const actionTypeKey = type.replace('_REQUEST', '');
+  const key = `${actionTypeKey}${meta?.reducerId || ''}`;
+
   const dispatch = useDispatch();
 
   const clearLoadingStatus = useCallback(() => {
