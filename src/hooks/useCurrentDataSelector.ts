@@ -29,7 +29,7 @@ export function useCurrentDataSelector<
   const data: ReturnType<T> = useSelector(state =>
     selector(
       state,
-      state?.[reduxStateBranchName]?.reducerId ? reducerId : 'default',
+      state?.[reduxStateBranchName]?.[reducerId] ? reducerId : 'default',
     ),
   );
 
