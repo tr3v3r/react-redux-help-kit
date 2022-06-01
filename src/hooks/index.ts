@@ -5,3 +5,4 @@ export {useStaticCallback} from './useStaticCallback';
 export {Action} from './types';
 export {useCurrentActions} from './useCurrentActions';
 export {useCurrentDataSelector} from './useCurrentDataSelector';
+export {useClearCurrentData} from './useClearCurrentData';

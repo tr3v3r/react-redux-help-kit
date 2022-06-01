@@ -5,6 +5,7 @@ export {
   useRequestLoading,
   useCurrentActions,
   useCurrentDataSelector,
+  useClearCurrentData,
   Action,
 } from './hooks';
 

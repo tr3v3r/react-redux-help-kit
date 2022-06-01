@@ -1,11 +1,22 @@
 import {useSelector, DefaultRootState, useDispatch} from 'react-redux';
 import {useLayoutEffect} from 'react';
 import {removeReducerById} from '../redux-kit/reducers';
-const subscribers = {};
+export const subscribers = {};
 
 export function useCurrentDataSelector<
   T extends (state: DefaultRootState, reducerId: string) => any,
->(selector: T, reducerId: string, reduxStateBranchName: string): ReturnType<T> {
+>(
+  selector: T,
+  {
+    reducerId,
+    reduxStateBranchName,
+    disableAutoCleanup = false,
+  }: {
+    reducerId: string;
+    reduxStateBranchName: string;
+    disableAutoCleanup?: boolean;
+  },
+): ReturnType<T> {
   const dispatch = useDispatch();
 
   useLayoutEffect(() => {
@@ -19,12 +30,14 @@ export function useCurrentDataSelector<
       subscribers[reducerId] -= 1;
       if (subscribers[reducerId] === 0) {
         delete subscribers[reducerId];
-        dispatch(
-          removeReducerById({reduxStateBranchName, reducerId: reducerId}),
-        );
+        if (!disableAutoCleanup) {
+          dispatch(
+            removeReducerById({reduxStateBranchName, reducerId: reducerId}),
+          );
+        }
       }
     };
-  }, [dispatch, reducerId, reduxStateBranchName]);
+  }, [disableAutoCleanup, dispatch, reducerId, reduxStateBranchName]);
 
   const data: ReturnType<T> = useSelector(state =>
     selector(
