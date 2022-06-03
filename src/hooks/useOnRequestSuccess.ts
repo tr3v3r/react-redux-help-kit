@@ -1,8 +1,11 @@
 import {useSelector, useDispatch} from 'react-redux';
-import {useEffect, useCallback, useMemo} from 'react';
+import {useEffect, useCallback, useMemo, useLayoutEffect} from 'react';
 
 import {ReduxKitState} from '../redux-kit';
-import {clearSuccessByActionType} from '../redux-kit/reducers';
+import {
+  clearSuccessByActionType,
+  successSubscribers,
+} from '../redux-kit/reducers';
 import {Action} from './types';
 import {useUpdateEffect} from './useUpdateEffect';
 import {useStaticCallback} from './useStaticCallback';
@@ -32,6 +35,21 @@ export function useOnRequestSuccess(
       onSuccess(data);
     }
   }, [onSuccess, data]);
+
+  useLayoutEffect(() => {
+    if (successSubscribers[key]) {
+      successSubscribers[key] += 1;
+    } else {
+      successSubscribers[key] = 1;
+    }
+
+    return () => {
+      successSubscribers[key] -= 1;
+      if (successSubscribers[key] === 0) {
+        delete successSubscribers[key];
+      }
+    };
+  }, [dispatch, key]);
 
   useUpdateEffect(() => {
     if (success === true) {

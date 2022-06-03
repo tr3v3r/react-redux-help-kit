@@ -6,6 +6,8 @@ export const clearSuccessByActionType = (actionType: string) => ({
   payload: actionType,
 });
 
+export const successSubscribers = {};
+
 export interface ISuccessReducerState {
   [actionType: string]:
     | {
@@ -40,7 +42,10 @@ export const successReducer = (
     ...state,
 
     [key]: {
-      data: requestState === 'SUCCESS' ? payload : null,
+      data:
+        requestState === 'SUCCESS' && successSubscribers[key] > 0
+          ? payload
+          : null,
       success:
         (requestState === 'REQUEST' && null) ||
         (requestState === 'SUCCESS' && true) ||
