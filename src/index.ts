@@ -6,6 +6,8 @@ export {
   useCurrentActions,
   useCurrentDataSelector,
   useClearCurrentData,
+  useStaticCallback,
+  useUpdateEffect,
   Action,
 } from './hooks';
 
