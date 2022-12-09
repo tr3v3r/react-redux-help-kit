@@ -10,5 +10,6 @@ export {
   useUpdateEffect,
   Action,
 } from './hooks';
+export {addReducerIdToMeta} from './utils';
 
 export {IError} from './types';
