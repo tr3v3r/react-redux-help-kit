@@ -1,14 +1,18 @@
 import {AnyAction} from 'redux';
 
 import {ACTIONS} from '../../constants';
+import {omit} from '../../utils';
 
 export const clearLoadingByActionType = (actionType: string) => ({
-  type: ACTIONS.CLEAR_SUCCESS_BY_ACTION_TYPE,
+  type: ACTIONS.CLEAR_LOADING_BY_ACTION_TYPE,
   payload: actionType,
 });
 
 export interface ILoadingReducerState {
-  [actionType: string]: boolean;
+  [actionType: string]: {
+    default: boolean;
+    [entityId: string]: boolean;
+  };
 }
 
 export const loadingReducer = (
@@ -18,10 +22,7 @@ export const loadingReducer = (
   const {type, payload, meta} = action;
 
   if (type === ACTIONS.CLEAR_LOADING_BY_ACTION_TYPE) {
-    return {
-      ...state,
-      [payload]: false,
-    };
+    return omit(state, [payload]);
   }
 
   const matches = /(.*)_(REQUEST|SUCCESS|FAILURE)/.exec(type);
@@ -35,6 +36,10 @@ export const loadingReducer = (
 
   return {
     ...state,
-    [key]: requestState === 'REQUEST',
+    [key]: {
+      ...(state[key] || {}),
+      default: requestState === 'REQUEST',
+      ...(meta?.entityId ? {[meta.entityId]: requestState === 'REQUEST'} : {}),
+    },
   };
 };

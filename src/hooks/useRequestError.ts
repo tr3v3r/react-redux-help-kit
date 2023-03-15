@@ -1,16 +1,22 @@
 import {useSelector, useDispatch} from 'react-redux';
-import {useEffect, useCallback, useMemo} from 'react';
+import {useEffect, useCallback} from 'react';
 
 import {ReduxKitState} from '../redux-kit';
 import {clearErrorByActionType} from '../redux-kit/reducers';
 import {Action} from './types';
 import {IError} from '../types';
+import {find} from '../utils';
 
 export function useRequestError<T extends IError>(
   action: Action,
 ): {
   error: T | null;
-  clearError: () => void;
+  clearError: (entityId?: string | null) => void;
+  entityId: string | null;
+  getErrorStateByEntityId: (entityId: string) => {
+    error: T | null;
+    entityId: string | null;
+  };
 } {
   const {type, meta} = typeof action === 'function' ? action() : action;
   const actionTypeKey = type.replace('_REQUEST', '');
@@ -18,23 +24,36 @@ export function useRequestError<T extends IError>(
 
   const dispatch = useDispatch();
 
-  const clearError = useCallback(() => {
-    dispatch(clearErrorByActionType(key));
-  }, [dispatch, key]);
+  const clearError = useCallback(
+    (entityId: string | null = null) => {
+      dispatch(clearErrorByActionType(key, entityId));
+    },
+    [dispatch, key],
+  );
 
   useEffect(() => {
     return clearError;
   }, [clearError]);
 
-  const error = useSelector(
-    (state: ReduxKitState) => state.error[key] || null,
-  ) as T;
+  const errorState = useSelector((state: ReduxKitState) => state.error[key]);
 
-  return useMemo(
-    () => ({
-      error,
-      clearError,
-    }),
-    [clearError, error],
+  const {error = null, entityId = null} =
+    find(errorState || {}, value => Boolean(value.error)) || {};
+
+  const getErrorStateByEntityId = useCallback(
+    (id: string) => {
+      return (errorState?.[id] || {error: null, entityId: null}) as {
+        error: T | null;
+        entityId: string | null;
+      };
+    },
+    [errorState],
   );
+
+  return {
+    error: error as T,
+    clearError,
+    entityId,
+    getErrorStateByEntityId,
+  };
 }

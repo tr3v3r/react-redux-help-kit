@@ -1,5 +1,5 @@
 import {useSelector, useDispatch} from 'react-redux';
-import {useEffect, useCallback, useMemo, useLayoutEffect} from 'react';
+import {useEffect, useCallback, useLayoutEffect} from 'react';
 
 import {ReduxKitState} from '../redux-kit';
 import {
@@ -9,10 +9,11 @@ import {
 import {Action} from './types';
 import {useUpdateEffect} from './useUpdateEffect';
 import {useStaticCallback} from './useStaticCallback';
+import {find} from '../utils';
 
 export function useOnRequestSuccess(
   action: Action,
-  onSuccess?: Function,
+  onSuccess?: (data: any, entityId: string | null) => void,
   autoClear: boolean = true,
 ) {
   const {type, meta} = typeof action === 'function' ? action() : action;
@@ -21,20 +22,28 @@ export function useOnRequestSuccess(
 
   const dispatch = useDispatch();
 
-  const clearSuccessStatus = useCallback(() => {
-    dispatch(clearSuccessByActionType(key));
-  }, [dispatch, key]);
+  const clearSuccessStatus = useCallback(
+    (entityId: string | null = null) => {
+      dispatch(clearSuccessByActionType(key, entityId));
+    },
+    [dispatch, key],
+  );
 
-  const {data = null, success = null} =
-    useSelector((state: ReduxKitState) => {
-      return state.success[key] || null;
-    }) || {};
+  const successState = useSelector((state: ReduxKitState) => {
+    return state.success[key];
+  });
+
+  const {
+    data = null,
+    success = null,
+    entityId = null,
+  } = find(successState || {}, value => value.success !== null) || {};
 
   const staticSuccessCallback = useStaticCallback(() => {
     if (onSuccess) {
-      onSuccess(data);
+      onSuccess(data, entityId);
     }
-  }, [onSuccess, data]);
+  }, [onSuccess, data, entityId]);
 
   useLayoutEffect(() => {
     if (successSubscribers[key]) {
@@ -54,23 +63,33 @@ export function useOnRequestSuccess(
   useUpdateEffect(() => {
     if (success === true) {
       staticSuccessCallback();
-
       if (autoClear) {
-        clearSuccessStatus();
+        clearSuccessStatus(entityId);
       }
     }
-  }, [clearSuccessStatus, staticSuccessCallback, success, autoClear]);
+  }, [clearSuccessStatus, staticSuccessCallback, success, autoClear, entityId]);
 
   useEffect(() => {
     return clearSuccessStatus;
   }, [clearSuccessStatus]);
 
-  return useMemo(
-    () => ({
-      success,
-      clearSuccessStatus,
-      data,
-    }),
-    [clearSuccessStatus, data, success],
+  const getSuccessStateByEntityId = useCallback(
+    (id: string) => {
+      return (
+        successState?.[id] || {
+          data: null,
+          success: null,
+          entityId: null,
+        }
+      );
+    },
+    [successState],
   );
+
+  return {
+    success,
+    clearSuccessStatus,
+    data,
+    getSuccessStateByEntityId,
+  };
 }

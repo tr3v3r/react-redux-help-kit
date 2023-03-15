@@ -1,20 +1,41 @@
 import {AnyAction} from 'redux';
 import {ACTIONS} from '../../constants';
+import {omit} from '../../utils';
 
-export const clearSuccessByActionType = (actionType: string) => ({
+export const clearSuccessByActionType = (
+  actionType: string,
+  entityId: string | null,
+) => ({
   type: ACTIONS.CLEAR_SUCCESS_BY_ACTION_TYPE,
-  payload: actionType,
+  payload: {actionType, entityId},
 });
 
 export const successSubscribers = {};
 
+function getSuccessStatus(requestState: string) {
+  if (requestState === 'SUCCESS') {
+    return true;
+  }
+  if (requestState === 'FAILURE') {
+    return false;
+  }
+
+  return null;
+}
+
 export interface ISuccessReducerState {
-  [actionType: string]:
-    | {
-        data: null | any;
-        success: boolean | null;
-      }
-    | undefined;
+  [actionType: string]: {
+    default: {
+      data: null | any;
+      success: boolean | null;
+      entityId: null | string;
+    };
+    [entityId: string]: {
+      data: null | any;
+      success: boolean | null;
+      entityId: null | string;
+    };
+  };
 }
 
 export const successReducer = (
@@ -24,13 +45,25 @@ export const successReducer = (
   const {type, payload, meta} = action;
 
   if (type === ACTIONS.CLEAR_SUCCESS_BY_ACTION_TYPE) {
-    return {
+    const {actionType, entityId} = payload || {};
+
+    if (!actionType) {
+      return state;
+    }
+    if (!entityId) {
+      return omit(state, [actionType]);
+    }
+
+    const newState = {
       ...state,
-      [payload]: null,
+      [actionType]: omit(state[actionType] || {}, [entityId, 'default']),
     };
+
+    return newState;
   }
 
   const matches = /(.*)_(REQUEST|SUCCESS|FAILURE)/.exec(type);
+
   if (!matches) {
     return state;
   }
@@ -38,18 +71,23 @@ export const successReducer = (
   const [, requestName, requestState] = matches;
   const key = `${requestName}${meta?.reducerId || ''}`;
 
+  if (!successSubscribers[key] || successSubscribers[key] <= 0) {
+    return state;
+  }
+
+  const successState = {
+    data: requestState === 'SUCCESS' ? payload : null,
+    success: getSuccessStatus(requestState),
+    entityId: meta?.entityId || null,
+  };
+
   return {
     ...state,
 
     [key]: {
-      data:
-        requestState === 'SUCCESS' && successSubscribers[key] > 0
-          ? payload
-          : null,
-      success:
-        (requestState === 'REQUEST' && null) ||
-        (requestState === 'SUCCESS' && true) ||
-        (requestState === 'FAILURE' && false),
+      ...(state[key] || {}),
+      default: successState,
+      ...(meta?.entityId ? {[meta.entityId]: successState} : {}),
     },
   };
 };

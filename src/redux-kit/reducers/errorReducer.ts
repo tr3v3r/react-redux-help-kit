@@ -1,14 +1,21 @@
 import {AnyAction} from 'redux';
 import {ACTIONS} from '../../constants';
 import {IError} from '../../types';
+import {omit} from '../../utils';
 
-export const clearErrorByActionType = (actionType: string) => ({
+export const clearErrorByActionType = (
+  actionType: string,
+  entityId: string | null,
+) => ({
   type: ACTIONS.CLEAR_ERROR_BY_ACTION_TYPE,
-  payload: actionType,
+  payload: {actionType, entityId},
 });
 
 export interface IErrorReducerState {
-  [actionType: string]: IError | null;
+  [actionType: string]: {
+    default: {error: IError | null; entityId: string | null};
+    [entityId: string]: {error: IError | null; entityId: string | null};
+  };
 }
 
 export const errorReducer = (
@@ -18,10 +25,21 @@ export const errorReducer = (
   const {type, payload, meta} = action;
 
   if (type === ACTIONS.CLEAR_ERROR_BY_ACTION_TYPE) {
-    return {
+    const {actionType, entityId} = payload || {};
+
+    if (!actionType) {
+      return state;
+    }
+    if (!entityId) {
+      return omit(state, [actionType]);
+    }
+
+    const newState = {
       ...state,
-      [payload as string]: null,
+      [actionType]: omit(state[actionType] || {}, [entityId, 'default']),
     };
+
+    return newState;
   }
 
   const matches = /(.*)_(REQUEST|FAILURE)/.exec(type);
@@ -31,8 +49,18 @@ export const errorReducer = (
 
   const [, requestName, requestState] = matches;
   const key = `${requestName}${meta?.reducerId || ''}`;
+
+  const errorState = {
+    error: requestState === 'FAILURE' ? (payload as IError) : null,
+    entityId: meta?.entityId || null,
+  };
+
   return {
     ...state,
-    [key]: requestState === 'FAILURE' ? (payload as IError) : null,
+    [key]: {
+      ...(state[key] || {}),
+      default: errorState,
+      ...(meta?.entityId ? {[meta.entityId]: errorState} : {}),
+    },
   };
 };
