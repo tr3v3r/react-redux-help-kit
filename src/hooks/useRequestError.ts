@@ -12,7 +12,6 @@ export function useRequestError<T extends IError>(
 ): {
   error: T | null;
   clearError: (entityId?: string | null) => void;
-  entityId: string | null;
   getErrorStateByEntityId: (entityId: string) => {
     error: T | null;
     entityId: string | null;
@@ -37,7 +36,7 @@ export function useRequestError<T extends IError>(
 
   const errorState = useSelector((state: ReduxKitState) => state.error[key]);
 
-  const {error = null, entityId = null} =
+  const {error = null} =
     find(errorState || {}, value => Boolean(value.error)) || {};
 
   const getErrorStateByEntityId = useCallback(
@@ -53,7 +52,6 @@ export function useRequestError<T extends IError>(
   return {
     error: error as T,
     clearError,
-    entityId,
     getErrorStateByEntityId,
   };
 }

@@ -1,5 +1,11 @@
-import {useSelector, useDispatch} from 'react-redux';
-import {useEffect, useCallback, useLayoutEffect} from 'react';
+import {useDispatch, ReactReduxContext} from 'react-redux';
+import {
+  useEffect,
+  useCallback,
+  useLayoutEffect,
+  useContext,
+  useRef,
+} from 'react';
 
 import {ReduxKitState} from '../redux-kit';
 import {
@@ -7,18 +13,20 @@ import {
   successSubscribers,
 } from '../redux-kit/reducers';
 import {Action} from './types';
-import {useUpdateEffect} from './useUpdateEffect';
 import {useStaticCallback} from './useStaticCallback';
 import {find} from '../utils';
+import {ISuccessReducerState} from '../redux-kit/reducers/successReducer';
 
 export function useOnRequestSuccess(
   action: Action,
-  onSuccess?: (data: any, entityId: string | null) => void,
+  callback?: (data: any, entityId: string | null) => void,
   autoClear: boolean = true,
 ) {
+  const {store} = useContext(ReactReduxContext);
   const {type, meta} = typeof action === 'function' ? action() : action;
   const actionTypeKey = type.replace('_REQUEST', '');
   const key = `${actionTypeKey}${meta?.reducerId || ''}`;
+  const prevSuccessState = useRef({});
 
   const dispatch = useDispatch();
 
@@ -29,21 +37,42 @@ export function useOnRequestSuccess(
     [dispatch, key],
   );
 
-  const successState = useSelector((state: ReduxKitState) => {
-    return state.success[key];
-  });
+  const getSuccessState = useCallback(() => {
+    const state: ReduxKitState = store.getState();
+    const errorState = state.success[key];
 
-  const {
-    data = null,
-    success = null,
-    entityId = null,
-  } = find(successState || {}, value => value.success !== null) || {};
+    return errorState;
+  }, [key, store]);
 
-  const staticSuccessCallback = useStaticCallback(() => {
-    if (onSuccess) {
-      onSuccess(data, entityId);
-    }
-  }, [onSuccess, data, entityId]);
+  const getSuccessData = useCallback(
+    (successState: ISuccessReducerState[string]) => {
+      const {
+        data = null,
+        success = null,
+        entityId = null,
+      } = find(successState || {}, value => value.success !== null) || {};
+
+      return {
+        data,
+        success,
+        entityId,
+      };
+    },
+    [],
+  );
+
+  const staticSuccessCallback = useStaticCallback(
+    (successState: ISuccessReducerState[string]) => {
+      const {data, entityId, success} = getSuccessData(successState);
+      if (callback && success === true) {
+        callback(data, entityId);
+        if (autoClear) {
+          clearSuccessStatus(entityId);
+        }
+      }
+    },
+    [callback, getSuccessData, autoClear, clearSuccessStatus],
+  );
 
   useLayoutEffect(() => {
     if (successSubscribers[key]) {
@@ -60,36 +89,21 @@ export function useOnRequestSuccess(
     };
   }, [dispatch, key]);
 
-  useUpdateEffect(() => {
-    if (success === true) {
-      staticSuccessCallback();
-      if (autoClear) {
-        clearSuccessStatus(entityId);
+  useEffect(() => {
+    const unsubscribe = store.subscribe(() => {
+      const successState = getSuccessState();
+
+      if (prevSuccessState.current !== successState) {
+        staticSuccessCallback(successState);
       }
-    }
-  }, [clearSuccessStatus, staticSuccessCallback, success, autoClear, entityId]);
+
+      prevSuccessState.current = successState;
+    });
+
+    return unsubscribe;
+  }, [getSuccessState, staticSuccessCallback, store]);
 
   useEffect(() => {
     return clearSuccessStatus;
   }, [clearSuccessStatus]);
-
-  const getSuccessStateByEntityId = useCallback(
-    (id: string) => {
-      return (
-        successState?.[id] || {
-          data: null,
-          success: null,
-          entityId: null,
-        }
-      );
-    },
-    [successState],
-  );
-
-  return {
-    success,
-    clearSuccessStatus,
-    data,
-    getSuccessStateByEntityId,
-  };
 }

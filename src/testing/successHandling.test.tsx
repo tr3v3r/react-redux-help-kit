@@ -1,5 +1,5 @@
 import React from 'react';
-import {useOnRequestSuccess} from '../hooks';
+import {useOnRequestSuccess, useRequestSuccess} from '../hooks';
 import {asyncReducers} from '../redux-kit';
 import {Provider} from 'react-redux';
 import {createStore, combineReducers} from 'redux';
@@ -20,13 +20,9 @@ describe('Testing success status handling', () => {
     const failureAction = {type: 'ANY_ACTION_FAILURE'};
 
     it('should return success as null if request action dispatched', () => {
-      const onSuccessCallback = jest.fn();
-      const {result} = renderHook(
-        () => useOnRequestSuccess(requestAction, onSuccessCallback),
-        {
-          wrapper: Wrapper,
-        },
-      );
+      const {result} = renderHook(() => useRequestSuccess(requestAction), {
+        wrapper: Wrapper,
+      });
 
       expect(result.current.success).toBe(null);
       act(() => {
@@ -34,18 +30,25 @@ describe('Testing success status handling', () => {
       });
 
       expect(result.current.success).toBe(null);
+    });
+
+    it('should not trigger callback if request was triggered', () => {
+      const onSuccessCallback = jest.fn();
+      renderHook(() => useOnRequestSuccess(requestAction, onSuccessCallback), {
+        wrapper: Wrapper,
+      });
+
+      act(() => {
+        store.dispatch(requestAction);
+      });
+
       expect(onSuccessCallback).not.toHaveBeenCalled();
     });
 
     it('should change success to true if success action dispatched and trigger callback', () => {
-      const onSuccessCallback = jest.fn();
-
-      const {result} = renderHook(
-        () => useOnRequestSuccess(requestAction, onSuccessCallback, false),
-        {
-          wrapper: Wrapper,
-        },
-      );
+      const {result} = renderHook(() => useRequestSuccess(requestAction), {
+        wrapper: Wrapper,
+      });
 
       act(() => {
         store.dispatch(requestAction);
@@ -58,18 +61,33 @@ describe('Testing success status handling', () => {
 
       expect(result.current.success).toBe(true);
       expect(result.current.data).toBe(successAction.payload);
-      expect(onSuccessCallback).toHaveBeenCalledWith(data, null);
     });
 
-    it('should change status to false if failure action dispatched', () => {
+    it('should trigger callback if success action dispatched', () => {
       const onSuccessCallback = jest.fn();
 
-      const {result} = renderHook(
-        () => useOnRequestSuccess(requestAction, onSuccessCallback),
+      renderHook(
+        () => useOnRequestSuccess(requestAction, onSuccessCallback, false),
         {
           wrapper: Wrapper,
         },
       );
+
+      act(() => {
+        store.dispatch(requestAction);
+      });
+
+      act(() => {
+        store.dispatch(successAction);
+      });
+
+      expect(onSuccessCallback).toHaveBeenCalledWith(data, null);
+    });
+
+    it('should change status to false if failure action dispatched', () => {
+      const {result} = renderHook(() => useRequestSuccess(requestAction), {
+        wrapper: Wrapper,
+      });
 
       act(() => {
         store.dispatch(requestAction);
@@ -80,6 +98,22 @@ describe('Testing success status handling', () => {
         store.dispatch(failureAction);
       });
       expect(result.current.success).toBe(false);
+    });
+
+    it('should not trigger callback if failure action dispatched', () => {
+      const onSuccessCallback = jest.fn();
+
+      renderHook(() => useOnRequestSuccess(requestAction, onSuccessCallback), {
+        wrapper: Wrapper,
+      });
+
+      act(() => {
+        store.dispatch(requestAction);
+      });
+
+      act(() => {
+        store.dispatch(failureAction);
+      });
       expect(onSuccessCallback).not.toHaveBeenCalled();
     });
 
@@ -88,7 +122,11 @@ describe('Testing success status handling', () => {
       const productId2 = 'product-2';
       const onSuccessCallback = jest.fn();
 
-      const {result} = renderHook(
+      const {result} = renderHook(() => useRequestSuccess(requestAction), {
+        wrapper: Wrapper,
+      });
+
+      renderHook(
         () => useOnRequestSuccess(requestAction, onSuccessCallback, false),
         {
           wrapper: Wrapper,
@@ -137,14 +175,10 @@ describe('Testing success status handling', () => {
     it('should clear success state by calling clearSuccessStatus', () => {
       const productId = 'product-1';
       const productId2 = 'product-2';
-      const onSuccessCallback = jest.fn();
 
-      const {result} = renderHook(
-        () => useOnRequestSuccess(requestAction, onSuccessCallback, false),
-        {
-          wrapper: Wrapper,
-        },
-      );
+      const {result} = renderHook(() => useRequestSuccess(requestAction), {
+        wrapper: Wrapper,
+      });
 
       act(() => {
         store.dispatch({...successAction, meta: {entityId: productId}});

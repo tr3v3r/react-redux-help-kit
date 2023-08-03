@@ -1,6 +1,6 @@
 import React from 'react';
 
-import {useRequestError} from '../hooks';
+import {useRequestError, useOnRequestError} from '../hooks';
 import {asyncReducers} from '../redux-kit';
 import {Provider} from 'react-redux';
 import {createStore, combineReducers} from 'redux';
@@ -45,6 +45,51 @@ describe('Testing error status handling', () => {
         store.dispatch(failureAction);
       });
       expect(result.current.error).toBe(failureAction.payload);
+    });
+
+    it('should allow to subscribe on if failure action dispatch', () => {
+      const callback = jest.fn();
+      const {unmount} = renderHook(
+        () => useOnRequestError(requestAction, callback),
+        {
+          wrapper: Wrapper,
+        },
+      );
+
+      act(() => {
+        store.dispatch(requestAction);
+      });
+      expect(callback).toHaveBeenCalledTimes(0);
+
+      act(() => {
+        store.dispatch(failureAction);
+      });
+
+      expect(callback).toHaveBeenCalledWith(failureAction.payload, null);
+      expect(callback).toHaveBeenCalledTimes(1);
+
+      const productId = 'productId';
+      act(() => {
+        store.dispatch({...requestAction, meta: {entityId: productId}});
+      });
+
+      expect(callback).toHaveBeenCalledTimes(1);
+
+      act(() => {
+        store.dispatch({...failureAction, meta: {entityId: productId}});
+      });
+
+      expect(callback).toHaveBeenCalledWith(failureAction.payload, productId);
+      expect(callback).toHaveBeenCalledTimes(2);
+
+      act(() => {
+        unmount();
+      });
+
+      act(() => {
+        store.dispatch(failureAction);
+      });
+      expect(callback).toHaveBeenCalledTimes(2);
     });
 
     it('should do nothinh if success action dispatched', () => {
