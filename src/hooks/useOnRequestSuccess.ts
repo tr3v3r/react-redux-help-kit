@@ -93,11 +93,14 @@ export function useOnRequestSuccess(
     const unsubscribe = store.subscribe(() => {
       const successState = getSuccessState();
 
-      if (prevSuccessState.current !== successState) {
-        staticSuccessCallback(successState);
-      }
+      const isStateUpdated =
+        successState && prevSuccessState.current !== successState;
 
       prevSuccessState.current = successState;
+
+      if (isStateUpdated) {
+        staticSuccessCallback(successState);
+      }
     });
 
     return unsubscribe;

@@ -66,11 +66,13 @@ export function useOnRequestError<T extends IError>(
   useEffect(() => {
     const unsubscribe = store.subscribe(() => {
       const errorState = getErrorState();
-      if (prevErrorState.current !== errorState) {
+      const isStateUpdated =
+        errorState && prevErrorState.current !== errorState;
+      prevErrorState.current = errorState;
+
+      if (isStateUpdated) {
         staticErrorCallback(errorState);
       }
-
-      prevErrorState.current = errorState;
     });
 
     return unsubscribe;
