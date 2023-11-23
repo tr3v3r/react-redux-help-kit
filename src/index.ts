@@ -8,6 +8,7 @@ export {
   useClearCurrentData,
   useStaticCallback,
   useUpdateEffect,
+  useOnRequestError,
   Action,
 } from './hooks';
 export {addReducerIdToMeta} from './utils';
