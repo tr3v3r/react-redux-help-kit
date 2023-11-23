@@ -164,12 +164,94 @@ describe('Testing success status handling', () => {
       act(() => {
         store.dispatch({...failureAction, meta: {entityId: productId2}});
       });
-      expect(result.current.getSuccessStateByEntityId(productId)).toEqual({
-        success: true,
-        entityId: 'product-1',
-        data,
+
+      expect(result.current).toEqual({
+        success: false,
+        entityId: productId2,
+        data: null,
+        clearSuccessStatus: expect.any(Function),
       });
       expect(result.current.success).toBe(false);
+    });
+
+    it('should return correct data on success by entityId', () => {
+      const productId = 'product-1';
+      const productId2 = 'product-2';
+
+      const data2 = {};
+      const onSuccessCallback = jest.fn();
+
+      renderHook(
+        () => useOnRequestSuccess(requestAction, onSuccessCallback, true),
+        {
+          wrapper: Wrapper,
+        },
+      );
+
+      act(() => {
+        store.dispatch({...requestAction, meta: {entityId: productId}});
+      });
+
+      act(() => {
+        store.dispatch({...failureAction, meta: {entityId: productId}});
+      });
+
+      act(() => {
+        store.dispatch({...requestAction, meta: {entityId: productId2}});
+      });
+
+      act(() => {
+        store.dispatch({
+          ...successAction,
+          payload: data2,
+          meta: {entityId: productId2},
+        });
+      });
+
+      expect(onSuccessCallback).toHaveBeenCalledWith(data2, productId2);
+    });
+
+    it('should work properly with simultanious calls', () => {
+      const productId = 'product-1';
+      const productId2 = 'product-2';
+
+      const data1 = {};
+      const data2 = {};
+      const onSuccessCallback = jest.fn();
+
+      renderHook(
+        () => useOnRequestSuccess(requestAction, onSuccessCallback, true),
+        {
+          wrapper: Wrapper,
+        },
+      );
+
+      act(() => {
+        store.dispatch({...requestAction, meta: {entityId: productId}});
+      });
+
+      act(() => {
+        store.dispatch({...requestAction, meta: {entityId: productId2}});
+      });
+
+      act(() => {
+        store.dispatch({
+          ...successAction,
+          payload: data1,
+          meta: {entityId: productId},
+        });
+      });
+
+      act(() => {
+        store.dispatch({
+          ...successAction,
+          payload: data2,
+          meta: {entityId: productId2},
+        });
+      });
+
+      expect(onSuccessCallback).toHaveBeenCalledWith(data1, productId);
+      expect(onSuccessCallback).toHaveBeenCalledWith(data2, productId2);
     });
 
     it('should clear success state by calling clearSuccessStatus', () => {
@@ -190,21 +272,9 @@ describe('Testing success status handling', () => {
 
       expect(store.getState().success).toEqual({
         ANY_ACTION: {
-          default: {
-            data: null,
-            entityId: 'product-2',
-            success: false,
-          },
-          'product-1': {
-            data: {},
-            entityId: 'product-1',
-            success: true,
-          },
-          'product-2': {
-            data: null,
-            entityId: 'product-2',
-            success: false,
-          },
+          data: null,
+          entityId: 'product-2',
+          success: false,
         },
       });
 
@@ -237,21 +307,9 @@ describe('Testing success status handling', () => {
 
       expect(store.getState().success).toEqual({
         ANY_ACTION: {
-          default: {
-            data: null,
-            entityId: 'product-2',
-            success: false,
-          },
-          'product-1': {
-            data: {},
-            entityId: 'product-1',
-            success: true,
-          },
-          'product-2': {
-            data: null,
-            entityId: 'product-2',
-            success: false,
-          },
+          data: null,
+          entityId: 'product-2',
+          success: false,
         },
       });
 
@@ -283,16 +341,9 @@ describe('Testing success status handling', () => {
 
       expect(store.getState().success).toEqual({
         ANY_ACTION: {
-          default: {
-            data: null,
-            entityId: 'product-1',
-            success: null,
-          },
-          'product-1': {
-            data: null,
-            entityId: 'product-1',
-            success: null,
-          },
+          data: null,
+          entityId: 'product-1',
+          success: null,
         },
       });
 
@@ -301,7 +352,7 @@ describe('Testing success status handling', () => {
       });
 
       expect(onSuccessCallback).toHaveBeenCalledWith(data, productId);
-      expect(store.getState().success).toEqual({ANY_ACTION: {}});
+      expect(store.getState().success).toEqual({});
     });
   });
 });

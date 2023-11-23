@@ -113,43 +113,6 @@ describe('Testing error status handling', () => {
       expect(result.current.error).toBe(failureAction.payload);
     });
 
-    it('should support storing error additionaly by entityId', () => {
-      const productId = 'product-1';
-      const productId2 = 'product-2';
-
-      const {result} = renderHook(() => useRequestError(requestAction), {
-        wrapper: Wrapper,
-      });
-
-      act(() => {
-        store.dispatch({...requestAction, meta: {entityId: productId}});
-      });
-
-      expect(result.current.error).toBe(null);
-      expect(result.current.getErrorStateByEntityId(productId)).toEqual({
-        error: null,
-        entityId: productId,
-      });
-      expect(result.current.getErrorStateByEntityId(productId2)).toEqual({
-        error: null,
-        entityId: null,
-      });
-
-      act(() => {
-        store.dispatch({...failureAction, meta: {entityId: productId2}});
-      });
-
-      expect(result.current.error).toBe('error');
-      expect(result.current.getErrorStateByEntityId(productId)).toEqual({
-        error: null,
-        entityId: productId,
-      });
-      expect(result.current.getErrorStateByEntityId(productId2)).toEqual({
-        error: 'error',
-        entityId: productId2,
-      });
-    });
-
     it('should clear loading state by calling clearLoadingStatus', () => {
       const productId = 'product-1';
 
@@ -163,14 +126,8 @@ describe('Testing error status handling', () => {
 
       expect(store.getState().error).toEqual({
         ANY_ACTION: {
-          default: {
-            entityId: 'product-1',
-            error: null,
-          },
-          'product-1': {
-            entityId: 'product-1',
-            error: null,
-          },
+          entityId: 'product-1',
+          error: null,
         },
       });
 
@@ -178,9 +135,7 @@ describe('Testing error status handling', () => {
         result.current.clearError('product-1');
       });
 
-      expect(store.getState().error).toEqual({
-        ANY_ACTION: {},
-      });
+      expect(store.getState().error).toEqual({});
 
       act(() => {
         result.current.clearError();

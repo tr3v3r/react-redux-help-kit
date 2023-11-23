@@ -3,19 +3,13 @@ import {ACTIONS} from '../../constants';
 import {IError} from '../../types';
 import {omit} from '../../utils';
 
-export const clearErrorByActionType = (
-  actionType: string,
-  entityId: string | null,
-) => ({
+export const clearErrorByActionType = (actionType: string) => ({
   type: ACTIONS.CLEAR_ERROR_BY_ACTION_TYPE,
-  payload: {actionType, entityId},
+  payload: {actionType},
 });
 
 export interface IErrorReducerState {
-  [actionType: string]: {
-    default: {error: IError | null; entityId: string | null};
-    [entityId: string]: {error: IError | null; entityId: string | null};
-  };
+  [actionType: string]: {error: IError | null; entityId: string | null};
 }
 
 export const errorReducer = (
@@ -25,21 +19,13 @@ export const errorReducer = (
   const {type, payload, meta} = action;
 
   if (type === ACTIONS.CLEAR_ERROR_BY_ACTION_TYPE) {
-    const {actionType, entityId} = payload || {};
+    const {actionType} = payload || {};
 
     if (!actionType) {
       return state;
     }
-    if (!entityId) {
-      return omit(state, [actionType]);
-    }
 
-    const newState = {
-      ...state,
-      [actionType]: omit(state[actionType] || {}, [entityId, 'default']),
-    };
-
-    return newState;
+    return omit(state, [actionType]);
   }
 
   const matches = /(.*)_(REQUEST|FAILURE)/.exec(type);
@@ -57,10 +43,6 @@ export const errorReducer = (
 
   return {
     ...state,
-    [key]: {
-      ...(state[key] || {}),
-      default: errorState,
-      ...(meta?.entityId ? {[meta.entityId]: errorState} : {}),
-    },
+    [key]: errorState,
   };
 };

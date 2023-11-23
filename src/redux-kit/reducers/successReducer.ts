@@ -2,12 +2,9 @@ import {AnyAction} from 'redux';
 import {ACTIONS} from '../../constants';
 import {omit} from '../../utils';
 
-export const clearSuccessByActionType = (
-  actionType: string,
-  entityId: string | null,
-) => ({
+export const clearSuccessByActionType = (actionType: string) => ({
   type: ACTIONS.CLEAR_SUCCESS_BY_ACTION_TYPE,
-  payload: {actionType, entityId},
+  payload: {actionType},
 });
 
 export const successSubscribers = {};
@@ -25,16 +22,9 @@ function getSuccessStatus(requestState: string) {
 
 export interface ISuccessReducerState {
   [actionType: string]: {
-    default: {
-      data: null | any;
-      success: boolean | null;
-      entityId: null | string;
-    };
-    [entityId: string]: {
-      data: null | any;
-      success: boolean | null;
-      entityId: null | string;
-    };
+    data: null | any;
+    success: boolean | null;
+    entityId: null | string;
   };
 }
 
@@ -45,21 +35,12 @@ export const successReducer = (
   const {type, payload, meta} = action;
 
   if (type === ACTIONS.CLEAR_SUCCESS_BY_ACTION_TYPE) {
-    const {actionType, entityId} = payload || {};
+    const {actionType} = payload || {};
 
     if (!actionType) {
       return state;
     }
-    if (!entityId) {
-      return omit(state, [actionType]);
-    }
-
-    const newState = {
-      ...state,
-      [actionType]: omit(state[actionType] || {}, [entityId, 'default']),
-    };
-
-    return newState;
+    return omit(state, [actionType]);
   }
 
   const matches = /(.*)_(REQUEST|SUCCESS|FAILURE)/.exec(type);
@@ -83,11 +64,6 @@ export const successReducer = (
 
   return {
     ...state,
-
-    [key]: {
-      ...(state[key] || {}),
-      default: successState,
-      ...(meta?.entityId ? {[meta.entityId]: successState} : {}),
-    },
+    [key]: successState,
   };
 };

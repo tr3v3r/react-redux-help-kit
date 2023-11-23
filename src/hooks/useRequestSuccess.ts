@@ -7,7 +7,6 @@ import {
   successSubscribers,
 } from '../redux-kit/reducers';
 import {Action} from './types';
-import {find} from '../utils';
 
 export function useRequestSuccess(action: Action) {
   const {type, meta} = typeof action === 'function' ? action() : action;
@@ -16,19 +15,15 @@ export function useRequestSuccess(action: Action) {
 
   const dispatch = useDispatch();
 
-  const clearSuccessStatus = useCallback(
-    (entityId: string | null = null) => {
-      dispatch(clearSuccessByActionType(key, entityId));
-    },
-    [dispatch, key],
-  );
+  const clearSuccessStatus = useCallback(() => {
+    dispatch(clearSuccessByActionType(key));
+  }, [dispatch, key]);
 
   const successState = useSelector((state: ReduxKitState) => {
     return state.success[key];
   });
 
-  const {data = null, success = null} =
-    find(successState || {}, value => value.success !== null) || {};
+  const {data = null, success = null, entityId = null} = successState || {};
 
   useLayoutEffect(() => {
     if (successSubscribers[key]) {
@@ -49,23 +44,10 @@ export function useRequestSuccess(action: Action) {
     return clearSuccessStatus;
   }, [clearSuccessStatus]);
 
-  const getSuccessStateByEntityId = useCallback(
-    (id: string) => {
-      return (
-        successState?.[id] || {
-          data: null,
-          success: null,
-          entityId: null,
-        }
-      );
-    },
-    [successState],
-  );
-
   return {
     success,
     clearSuccessStatus,
     data,
-    getSuccessStateByEntityId,
+    entityId,
   };
 }

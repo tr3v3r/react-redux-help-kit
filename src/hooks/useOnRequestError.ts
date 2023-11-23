@@ -5,7 +5,6 @@ import {ReduxKitState} from '../redux-kit';
 import {clearErrorByActionType} from '../redux-kit/reducers';
 import {Action} from './types';
 import {IError} from '../types';
-import {find} from '../utils';
 import {useStaticCallback} from './useStaticCallback';
 import {IErrorReducerState} from '../redux-kit/reducers/errorReducer';
 
@@ -22,12 +21,9 @@ export function useOnRequestError<T extends IError>(
 
   const dispatch = useDispatch();
 
-  const clearError = useCallback(
-    (entityId: string | null = null) => {
-      dispatch(clearErrorByActionType(key, entityId));
-    },
-    [dispatch, key],
-  );
+  const clearError = useCallback(() => {
+    dispatch(clearErrorByActionType(key));
+  }, [dispatch, key]);
 
   useEffect(() => {
     return clearError;
@@ -41,8 +37,7 @@ export function useOnRequestError<T extends IError>(
   }, [key, store]);
 
   const getErrorData = useCallback((errorState: IErrorReducerState[string]) => {
-    const {error = null, entityId = null} =
-      find(errorState || {}, value => Boolean(value.error)) || {};
+    const {error = null, entityId = null} = errorState || {};
 
     return {
       error,
@@ -55,7 +50,7 @@ export function useOnRequestError<T extends IError>(
       const {error, entityId} = getErrorData(errorState);
       if (callback && error) {
         if (autoClear) {
-          clearError(entityId);
+          clearError();
         }
         callback(error as T | null, entityId);
       }

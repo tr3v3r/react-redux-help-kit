@@ -14,7 +14,6 @@ import {
 } from '../redux-kit/reducers';
 import {Action} from './types';
 import {useStaticCallback} from './useStaticCallback';
-import {find} from '../utils';
 import {ISuccessReducerState} from '../redux-kit/reducers/successReducer';
 
 export function useOnRequestSuccess(
@@ -30,12 +29,9 @@ export function useOnRequestSuccess(
 
   const dispatch = useDispatch();
 
-  const clearSuccessStatus = useCallback(
-    (entityId: string | null = null) => {
-      dispatch(clearSuccessByActionType(key, entityId));
-    },
-    [dispatch, key],
-  );
+  const clearSuccessStatus = useCallback(() => {
+    dispatch(clearSuccessByActionType(key));
+  }, [dispatch, key]);
 
   const getSuccessState = useCallback(() => {
     const state: ReduxKitState = store.getState();
@@ -46,11 +42,7 @@ export function useOnRequestSuccess(
 
   const getSuccessData = useCallback(
     (successState: ISuccessReducerState[string]) => {
-      const {
-        data = null,
-        success = null,
-        entityId = null,
-      } = find(successState || {}, value => value.success !== null) || {};
+      const {data = null, success = null, entityId = null} = successState || {};
 
       return {
         data,
@@ -67,7 +59,7 @@ export function useOnRequestSuccess(
       if (callback && success === true) {
         callback(data, entityId);
         if (autoClear) {
-          clearSuccessStatus(entityId);
+          clearSuccessStatus();
         }
       }
     },
