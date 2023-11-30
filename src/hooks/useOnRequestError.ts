@@ -11,7 +11,7 @@ import {IErrorReducerState} from '../redux-kit/reducers/errorReducer';
 export function useOnRequestError<T extends IError>(
   action: Action,
   callback: (error: T | null, entityId: string | null) => void,
-  autoClear = true,
+  autoClear = false,
 ) {
   const {store} = useContext(ReactReduxContext);
   const prevErrorState = useRef({});

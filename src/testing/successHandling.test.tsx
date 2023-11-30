@@ -331,9 +331,12 @@ describe('Testing success status handling', () => {
 
       const onSuccessCallback = jest.fn();
 
-      renderHook(() => useOnRequestSuccess(requestAction, onSuccessCallback), {
-        wrapper: Wrapper,
-      });
+      renderHook(
+        () => useOnRequestSuccess(requestAction, onSuccessCallback, true),
+        {
+          wrapper: Wrapper,
+        },
+      );
 
       act(() => {
         store.dispatch({...requestAction, meta: {entityId: productId}});

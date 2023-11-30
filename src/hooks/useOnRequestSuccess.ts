@@ -19,7 +19,7 @@ import {ISuccessReducerState} from '../redux-kit/reducers/successReducer';
 export function useOnRequestSuccess(
   action: Action,
   callback?: (data: any, entityId: string | null) => void,
-  autoClear: boolean = true,
+  autoClear: boolean = false,
 ) {
   const {store} = useContext(ReactReduxContext);
   const {type, meta} = typeof action === 'function' ? action() : action;
