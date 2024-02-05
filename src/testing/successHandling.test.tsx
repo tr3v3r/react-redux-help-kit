@@ -1,7 +1,11 @@
-import React from 'react';
-import {useOnRequestSuccess, useRequestSuccess} from '../hooks';
+import React, {useCallback} from 'react';
+import {
+  useOnRequestError,
+  useOnRequestSuccess,
+  useRequestSuccess,
+} from '../hooks';
 import {asyncReducers} from '../redux-kit';
-import {Provider} from 'react-redux';
+import {Provider, useSelector} from 'react-redux';
 import {createStore, combineReducers} from 'redux';
 import {act, renderHook} from '@testing-library/react-hooks';
 
@@ -326,7 +330,7 @@ describe('Testing success status handling', () => {
       expect(store.getState().success).toEqual({});
     });
 
-    it('should clear success by default if callback is present', () => {
+    it('should auto clear success it needed', () => {
       const productId = 'product-1';
 
       const onSuccessCallback = jest.fn();
@@ -356,6 +360,96 @@ describe('Testing success status handling', () => {
 
       expect(onSuccessCallback).toHaveBeenCalledWith(data, productId);
       expect(store.getState().success).toEqual({});
+    });
+
+    it('should has up to date data from the scope', () => {
+      const initialState = {
+        data: null,
+      };
+
+      const testReducer = (state = initialState, action) => {
+        if (action.type === 'ANY_ACTION_SUCCESS') {
+          return {
+            ...state,
+            data: action.payload,
+          };
+        }
+        return state;
+      };
+      const newStore = createStore(
+        combineReducers({
+          ...asyncReducers,
+          test: testReducer,
+        }),
+      );
+      const NewWrapper = ({children}) => (
+        <Provider store={newStore}>{children}</Provider>
+      );
+
+      let finalData = null;
+
+      function useTest() {
+        // @ts-ignore
+        const testData = useSelector(state => state.test.data);
+
+        const callback = useCallback(() => {
+          finalData = testData;
+        }, [testData]);
+
+        useOnRequestSuccess(requestAction, callback);
+      }
+
+      renderHook(() => useTest(), {
+        wrapper: NewWrapper,
+      });
+
+      act(() => {
+        newStore.dispatch(requestAction);
+      });
+
+      act(() => {
+        newStore.dispatch({
+          ...successAction,
+          payload: 'test',
+        });
+      });
+
+      expect(finalData).toEqual('test');
+    });
+
+    it('should not be affected by other state hooks', () => {
+      const onSuccessCallback = jest.fn();
+      const onErrorCallback = jest.fn();
+
+      function useTest() {
+        useOnRequestSuccess(requestAction, onSuccessCallback);
+
+        useOnRequestError(requestAction, onErrorCallback);
+      }
+
+      renderHook(() => useTest(), {
+        wrapper: Wrapper,
+      });
+
+      act(() => {
+        store.dispatch(requestAction);
+      });
+
+      act(() => {
+        store.dispatch({...failureAction, payload: 'error'});
+      });
+
+      expect(onErrorCallback).toBeCalled();
+
+      act(() => {
+        store.dispatch(requestAction);
+      });
+
+      act(() => {
+        store.dispatch(successAction);
+      });
+
+      expect(onSuccessCallback).toBeCalled();
     });
   });
 });
