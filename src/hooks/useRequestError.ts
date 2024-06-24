@@ -12,6 +12,7 @@ export function useRequestError<T extends IError>(
   error: T | null;
   clearError: (entityId?: string | null) => void;
   entityId: string | null;
+  timestamp: number;
 } {
   const {type, meta} = typeof action === 'function' ? action() : action;
   const actionTypeKey = type.replace('_REQUEST', '');
@@ -29,11 +30,12 @@ export function useRequestError<T extends IError>(
 
   const errorState = useSelector((state: ReduxKitState) => state.error[key]);
 
-  const {error = null, entityId = null} = errorState || {};
+  const {error = null, entityId = null, timestamp} = errorState || {};
 
   return {
     error: error as T,
     clearError,
     entityId,
+    timestamp,
   };
 }

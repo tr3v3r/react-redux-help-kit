@@ -9,6 +9,8 @@ import {Provider, useSelector} from 'react-redux';
 import {createStore, combineReducers} from 'redux';
 import {act, renderHook} from '@testing-library/react-hooks';
 
+jest.useFakeTimers().setSystemTime(new Date('2020-01-01'));
+
 describe('Testing success status handling', () => {
   const store = createStore(combineReducers(asyncReducers));
   const Wrapper = ({children}) => <Provider store={store}>{children}</Provider>;
@@ -174,6 +176,7 @@ describe('Testing success status handling', () => {
         entityId: productId2,
         data: null,
         clearSuccessStatus: expect.any(Function),
+        timestamp: 1577836800000,
       });
       expect(result.current.success).toBe(false);
     });
@@ -279,6 +282,7 @@ describe('Testing success status handling', () => {
           data: null,
           entityId: 'product-2',
           success: false,
+          timestamp: 1577836800000,
         },
       });
 
@@ -314,6 +318,7 @@ describe('Testing success status handling', () => {
           data: null,
           entityId: 'product-2',
           success: false,
+          timestamp: 1577836800000,
         },
       });
 
@@ -351,6 +356,7 @@ describe('Testing success status handling', () => {
           data: null,
           entityId: 'product-1',
           success: null,
+          timestamp: 1577836800000,
         },
       });
 

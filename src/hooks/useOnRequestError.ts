@@ -9,7 +9,7 @@ export function useOnRequestError<T extends IError>(
   callback: (error: T | null, entityId: string | null) => void,
   autoClear = false,
 ) {
-  const {entityId, error, clearError} = useRequestError(action);
+  const {entityId, error, clearError, timestamp} = useRequestError(action);
 
   const errorCallback = useStaticCallback(() => {
     if (callback) {
@@ -24,5 +24,5 @@ export function useOnRequestError<T extends IError>(
     if (error) {
       errorCallback();
     }
-  }, [errorCallback, error, entityId]);
+  }, [errorCallback, error, entityId, timestamp]);
 }

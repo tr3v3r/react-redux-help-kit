@@ -23,7 +23,12 @@ export function useRequestSuccess(action: Action) {
     return state.success[key];
   });
 
-  const {data = null, success = null, entityId = null} = successState || {};
+  const {
+    data = null,
+    success = null,
+    entityId = null,
+    timestamp,
+  } = successState || {};
 
   useLayoutEffect(() => {
     if (successSubscribers[key]) {
@@ -49,5 +54,6 @@ export function useRequestSuccess(action: Action) {
     clearSuccessStatus,
     data,
     entityId,
+    timestamp,
   };
 }

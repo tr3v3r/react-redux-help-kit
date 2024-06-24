@@ -9,7 +9,11 @@ export const clearErrorByActionType = (actionType: string) => ({
 });
 
 export interface IErrorReducerState {
-  [actionType: string]: {error: IError | null; entityId: string | null};
+  [actionType: string]: {
+    error: IError | null;
+    entityId: string | null;
+    timestamp: number;
+  };
 }
 
 export const errorReducer = (
@@ -39,6 +43,7 @@ export const errorReducer = (
   const errorState = {
     error: requestState === 'FAILURE' ? (payload as IError) : null,
     entityId: meta?.entityId || null,
+    timestamp: Date.now(),
   };
 
   return {

@@ -25,6 +25,7 @@ export interface ISuccessReducerState {
     data: null | any;
     success: boolean | null;
     entityId: null | string;
+    timestamp: number;
   };
 }
 
@@ -60,6 +61,7 @@ export const successReducer = (
     data: requestState === 'SUCCESS' ? payload : null,
     success: getSuccessStatus(requestState),
     entityId: meta?.entityId || null,
+    timestamp: Date.now(),
   };
 
   return {

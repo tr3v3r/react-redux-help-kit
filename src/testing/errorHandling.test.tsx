@@ -5,6 +5,7 @@ import {asyncReducers} from '../redux-kit';
 import {Provider} from 'react-redux';
 import {createStore, combineReducers} from 'redux';
 import {act, renderHook} from '@testing-library/react-hooks';
+jest.useFakeTimers().setSystemTime(new Date('2020-01-01'));
 
 describe('Testing error status handling', () => {
   const store = createStore(combineReducers(asyncReducers));
@@ -128,6 +129,7 @@ describe('Testing error status handling', () => {
         ANY_ACTION: {
           entityId: 'product-1',
           error: null,
+          timestamp: 1577836800000,
         },
       });
 

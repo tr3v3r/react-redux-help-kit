@@ -8,7 +8,7 @@ export function useOnRequestSuccess(
   callback?: (data: any, entityId: string | null) => void,
   autoClear: boolean = false,
 ) {
-  const {data, clearSuccessStatus, entityId, success} =
+  const {data, clearSuccessStatus, entityId, success, timestamp} =
     useRequestSuccess(action);
 
   const successCallback = useStaticCallback(() => {
@@ -24,5 +24,5 @@ export function useOnRequestSuccess(
     if (success === true) {
       successCallback();
     }
-  }, [successCallback, success, entityId]);
+  }, [successCallback, success, entityId, timestamp]);
 }
