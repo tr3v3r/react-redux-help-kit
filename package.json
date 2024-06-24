@@ -1,6 +1,6 @@
 {
   "name": "react-redux-help-kit",
-  "version": "2.1.4",
+  "version": "2.1.5",
   "description": "React + Redux utils to improve Development Experience.",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
